@@ -182,12 +182,10 @@ def game_start(generation, x, y, is_ai_player):
         SCREEN.blit(text1, (SW - 10 - text1.get_width(), 0))
         SCREEN.blit(text2, (0, 0))
         # Debug
-        text3 = Font.render('birdxpos:' + str(x_new), 1, (255, 255, 255))
-        text4 = Font.render('birdypos:' + str(y_new), 1, (255, 255, 255))
-        # text5 = Font.render('birdyvel:' + str(birdyvel), 1, (255, 255, 255))
-        SCREEN.blit(text3, (0, text2.get_rect()[3] + 10))
-        SCREEN.blit(text4, (0, text2.get_rect()[3] + text3.get_rect()[3] + 20))
-        # SCREEN.blit(text5, (0, text2.get_rect()[3] + text3.get_rect()[3] + text4.get_rect()[3] + 30))
+        # text3 = Font.render('birdxpos:' + str(x_new), 1, (255, 255, 255))
+        # text4 = Font.render('birdypos:' + str(y_new), 1, (255, 255, 255))
+        # SCREEN.blit(text3, (0, text2.get_rect()[3] + 10))
+        # SCREEN.blit(text4, (0, text2.get_rect()[3] + text3.get_rect()[3] + 20))
         SCREEN.blit(IMAGES['bird'], (birdxpos, birdypos))
 
         pygame.display.update()
