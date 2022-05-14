@@ -279,4 +279,3 @@ if __name__ == "__main__":
         counts.append(generation)
         scores.append(score)
         generation += 1
-    print(generation)
