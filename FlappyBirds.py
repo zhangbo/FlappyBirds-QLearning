@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 models = "qtable.npy"
+THREHOLDS_SCORES = 5000
 
 SW = 288
 SH = 512
@@ -24,7 +25,13 @@ BIRD = 'imgs/bird1.png'
 BG = 'imgs/bg.png'
 PIPE = 'imgs/pipe.png'
 PIPE_DISTANCE = SW + 10
-Q = np.load(models) if os.path.exists(models) else np.zeros((8, 20, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
+
+if os.path.exists(models):
+    Q = np.load(models)
+    TRAINING = False
+else:
+    Q = np.zeros((8, 20, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
+    TRAINING = True
 
 
 def static():
@@ -102,7 +109,6 @@ def game_start(generation, x, y, is_ai_player):
 
         for event in pygame.event.get():
             if event.type == QUIT:
-                np.save(models, Q, allow_pickle=False)
                 plt.scatter(counts, scores)
                 plt.xlabel("GENERATIONS")
                 plt.ylabel("SCORES")
@@ -121,6 +127,8 @@ def game_start(generation, x, y, is_ai_player):
             pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width()/2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
+                if score == THREHOLDS_SCORES:
+                    np.save(models, Q, allow_pickle=False)
                 if not is_ai_player: SOUNDS["point"].play()
 
         if birdyvel < birdymaxvel and not playerFlapped:
@@ -238,6 +246,7 @@ def convert(birdxpos, birdypos, bttm_pipes):
 
 
 def Q_update(x_prev, y_prev, jump, reward, x_new, y_new):
+    if not TRAINING: return
     if jump:
         Q[x_prev][y_prev][1] = 0.3 * Q[x_prev][y_prev][1] + \
             (0.7)*(reward + max(Q[x_new][y_new][0], Q[x_new][y_new][1]))
