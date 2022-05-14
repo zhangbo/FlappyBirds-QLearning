@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 models = "qtable.npy"
-THREHOLDS_SCORES = 5000
+THREHOLDS_SCORES = 3000
 
 SW = 288
 SH = 512
@@ -83,14 +83,10 @@ def game_start(generation, x, y, is_ai_player):
 
     bgx1 = 0
     bgx2 = IMAGES['background'].get_width()
-    newPipe1 = get_new_pipe()
-    up_pipes = [
-        {'x': SW + 10, 'y': newPipe1[0]['y']}
-    ]
 
-    bttm_pipes = [
-        {'x': SW + 10, 'y': newPipe1[1]['y']}
-    ]
+    newPipe1 = get_new_pipe()
+    newPipe2 = get_new_pipe(newPipe1)
+    up_pipes, bttm_pipes = [newPipe1[0], newPipe2[0]], [newPipe1[1], newPipe2[1]]
 
     pipeVelx = -4
 
@@ -145,14 +141,15 @@ def game_start(generation, x, y, is_ai_player):
             upperPipe['x'] += pipeVelx
             lowerPipe['x'] += pipeVelx
 
-        if (0 <= up_pipes[0]['x'] <= 4):
-            newPipe = get_new_pipe()
-            up_pipes.append(newPipe[0])
-            bttm_pipes.append(newPipe[1])
-
         if(up_pipes[0]['x'] < -IMAGES['pipe'][0].get_width()):
             up_pipes.pop(0)
             bttm_pipes.pop(0)
+
+        if (len(bttm_pipes) == 1):
+            newPipe = get_new_pipe(bttm_pipes)
+            up_pipes.append(newPipe[0])
+            bttm_pipes.append(newPipe[1])
+
         basex1 -= 4
         basex2 -= 4
         if(basex1 <= -IMAGES['base'].get_width()):
@@ -224,13 +221,13 @@ def human_player():
 def ai_player(x, y):
     return Q[x][y][1] > Q[x][y][0]
 
-def get_new_pipe():
+def get_new_pipe(bttm_pipes=None):
     pipeHeight = IMAGES['pipe'][1].get_height()
     gap = int(SH/4)
     y2 = int(random.randrange(gap, int(BASEY)))
-    pipex = int(SW+10)
+    pipex = 0 if bttm_pipes is None or len(bttm_pipes) == 0 else bttm_pipes[-1]['x']
+    pipex += int(SW+10)
     y1 = int(pipeHeight - y2 + gap)
-
     pipe = [
         {'x': pipex, 'y': -y1},
         {'x': pipex, 'y': y2}
@@ -238,7 +235,7 @@ def get_new_pipe():
     return pipe
 
 def convert(birdxpos, birdypos, bttm_pipes):
-    x = min(SW, max(bttm_pipes[0]['x'], 0))
+    x = min(SW, bttm_pipes[0]['x'] if birdxpos <= bttm_pipes[0]['x'] else bttm_pipes[1]['x'])
     y = bttm_pipes[0]['y'] - birdypos
     if(y < 0):
         y = abs(y)+SH
