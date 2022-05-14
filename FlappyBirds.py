@@ -13,6 +13,7 @@ models = "qtable.npy"
 
 SW = 288
 SH = 512
+FPS = 36
 
 BASEY = SH * 0.8
 IMAGES, SOUNDS = {}, {}
@@ -23,9 +24,7 @@ BIRD = 'imgs/bird1.png'
 BG = 'imgs/bg.png'
 PIPE = 'imgs/pipe.png'
 PIPE_DISTANCE = SW + 10
-Q = np.load(models) if os.path.exists(
-    models) else np.zeros((8, 20, 2), dtype=float) # 6: birdxpos 12: birdypos 2: 0正1负 11: birdyvel 2: 0正1负 2: 1跳0不跳
-FPS = 32
+Q = np.load(models) if os.path.exists(models) else np.zeros((8, 20, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
 
 
 def static():
