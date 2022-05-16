@@ -10,7 +10,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 models = "qtable.npy"
-THREHOLDS_SCORES = 3000
 
 SW = 288
 SH = 512
@@ -30,7 +29,7 @@ if os.path.exists(models):
     Q = np.load(models)
     TRAINING = False
 else:
-    Q = np.zeros((8, 20, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
+    Q = np.zeros((8, 21, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
     TRAINING = True
 
 
@@ -99,7 +98,6 @@ def game_start(generation, x, y, is_ai_player):
     playerFlapped = False
 
     while(True):
-
         x_prev, y_prev = convert(birdxpos, birdypos, bttm_pipes)
         jump = ai_player(x_prev, y_prev) if is_ai_player else human_player()
 
@@ -123,7 +121,7 @@ def game_start(generation, x, y, is_ai_player):
             pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width()/2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
-                if score == THREHOLDS_SCORES:
+                if score % 1000 == 0:
                     np.save(models, Q, allow_pickle=False)
                 if not is_ai_player: SOUNDS["point"].play()
 
@@ -235,21 +233,25 @@ def get_new_pipe(bttm_pipes=None):
     return pipe
 
 def convert(birdxpos, birdypos, bttm_pipes):
-    x = min(SW, bttm_pipes[0]['x'] if birdxpos <= bttm_pipes[0]['x'] else bttm_pipes[1]['x'])
-    y = bttm_pipes[0]['y'] - birdypos
+    if birdxpos <= bttm_pipes[0]['x'] + IMAGES['pipe'][0].get_width():
+        x = min(SW, bttm_pipes[0]['x'] + IMAGES['pipe'][0].get_width())
+        y = bttm_pipes[0]['y'] - birdypos
+    else:
+        x = min(SW, bttm_pipes[1]['x'] + IMAGES['pipe'][0].get_width())
+        y = bttm_pipes[1]['y'] - birdypos
     if(y < 0):
-        y = abs(y)+SH
+        y = abs(y) + SH
     return int(x/40), int(y/40)
 
 
 def Q_update(x_prev, y_prev, jump, reward, x_new, y_new):
     if not TRAINING: return
     if jump:
-        Q[x_prev][y_prev][1] = 0.3 * Q[x_prev][y_prev][1] + \
-            (0.7)*(reward + max(Q[x_new][y_new][0], Q[x_new][y_new][1]))
+        Q[x_prev][y_prev][1] = 0.4 * Q[x_prev][y_prev][1] + \
+            (0.6)*(reward + max(Q[x_new][y_new][0], Q[x_new][y_new][1]))
     else:
-        Q[x_prev][y_prev][0] = 0.3 * Q[x_prev][y_prev][0] + \
-            (0.7)*(reward + max(Q[x_new][y_new][0], Q[x_new][y_new][1]))
+        Q[x_prev][y_prev][0] = 0.4 * Q[x_prev][y_prev][0] + \
+            (0.6)*(reward + max(Q[x_new][y_new][0], Q[x_new][y_new][1]))
 
 
 if __name__ == "__main__":
