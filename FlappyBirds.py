@@ -121,7 +121,7 @@ def game_start(generation, x, y, is_ai_player):
             pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width()/2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
-                if score % 1000 == 0:
+                if score % 5000 == 0:
                     np.save(models, Q, allow_pickle=False)
                 if not is_ai_player: SOUNDS["point"].play()
 
