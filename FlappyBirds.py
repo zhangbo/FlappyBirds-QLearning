@@ -28,7 +28,6 @@ PIPE_DISTANCE = SW + 10
 
 if os.path.exists(models):
     Q = np.load(models)
-    print(Q)
     TRAINING = False
 else:
     Q = np.zeros((8, 20, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
@@ -165,13 +164,14 @@ def game_start(generation, x, y, is_ai_player):
         x_new, y_new = convert(birdxpos, birdypos, bttm_pipes)
         if crash:
             reward = -1000
-            print('x_new: ' + str(x_new))
-            print('y_new: ' + str(y_new))
-            print('birdyvel: ' + str(birdyvel))
-            print('birdypos: ' + str(birdypos))
-            print('bttm_pipes[0][x]: ' + str(bttm_pipes[0]['x']))
-            print('bttm_pipes[1][x]: ' + str(bttm_pipes[1]['x']))
-            print('bttm_pipes[1][y]: ' + str(bttm_pipes[1]['y']))
+            # Debug
+            # print('x_new: ' + str(x_new))
+            # print('y_new: ' + str(y_new))
+            # print('birdyvel: ' + str(birdyvel))
+            # print('birdypos: ' + str(birdypos))
+            # print('bttm_pipes[0][x]: ' + str(bttm_pipes[0]['x']))
+            # print('bttm_pipes[1][x]: ' + str(bttm_pipes[1]['x']))
+            # print('bttm_pipes[1][y]: ' + str(bttm_pipes[1]['y']))
             Q_update(x_prev, y_prev, jump, reward, x_new, y_new)
             if not is_ai_player: SOUNDS["hit"].play()
             return score
