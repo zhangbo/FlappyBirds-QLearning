@@ -16,6 +16,7 @@ SH = 512
 FPS = 36
 
 BASEY = SH * 0.8
+GAP = int(SH>>2)
 IMAGES, SOUNDS = {}, {}
 pygame.font.init()
 SCREEN = pygame.display.set_mode((SW, SH))
@@ -27,15 +28,16 @@ PIPE_DISTANCE = SW + 10
 
 if os.path.exists(models):
     Q = np.load(models)
+    print(Q)
     TRAINING = False
 else:
-    Q = np.zeros((8, 21, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
+    Q = np.zeros((8, 20, 2), dtype=float) # 8: birdxpos 20: birdypos 2: 1跳0不跳
     TRAINING = True
 
 
 def static():
     birdxpos = int(SW/5)
-    birdypos = int(SH/2)
+    birdypos = int(SH>>1)
     basex = 0
     text1 = Font.render("› HUMAN", 1, (0, 0, 0))
     text2 = Font.render("  AI", 1, (255, 255, 255))
@@ -76,7 +78,7 @@ def static():
 def game_start(generation, x, y, is_ai_player):
     score = 0
     birdxpos = int(SW/5)
-    birdypos = int(SH/2)
+    birdypos = int(SH>>1)
     basex1 = 0
     basex2 = SW
 
@@ -121,7 +123,7 @@ def game_start(generation, x, y, is_ai_player):
             pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width()/2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
-                if score % 5000 == 0:
+                if score % 5000 == 0 and TRAINING:
                     np.save(models, Q, allow_pickle=False)
                 if not is_ai_player: SOUNDS["point"].play()
 
@@ -159,10 +161,17 @@ def game_start(generation, x, y, is_ai_player):
         if(bgx1 <= -IMAGES['background'].get_width()):
             bgx1 = bgx2
             bgx2 = bgx1 + IMAGES['background'].get_width()
-        crashTest = Collision(birdxpos, birdypos, up_pipes, bttm_pipes)
+        crash = Collision(birdxpos, birdypos, up_pipes, bttm_pipes)
         x_new, y_new = convert(birdxpos, birdypos, bttm_pipes)
-        if crashTest:
+        if crash:
             reward = -1000
+            print('x_new: ' + str(x_new))
+            print('y_new: ' + str(y_new))
+            print('birdyvel: ' + str(birdyvel))
+            print('birdypos: ' + str(birdypos))
+            print('bttm_pipes[0][x]: ' + str(bttm_pipes[0]['x']))
+            print('bttm_pipes[1][x]: ' + str(bttm_pipes[1]['x']))
+            print('bttm_pipes[1][y]: ' + str(bttm_pipes[1]['y']))
             Q_update(x_prev, y_prev, jump, reward, x_new, y_new)
             if not is_ai_player: SOUNDS["hit"].play()
             return score
@@ -221,19 +230,18 @@ def ai_player(x, y):
 
 def get_new_pipe(bttm_pipes=None):
     pipeHeight = IMAGES['pipe'][1].get_height()
-    gap = int(SH/4)
-    y2 = int(random.randrange(gap, int(BASEY)))
+    y2 = int(random.randrange(GAP, int(BASEY)))
     pipex = 0 if bttm_pipes is None or len(bttm_pipes) == 0 else bttm_pipes[-1]['x']
     pipex += int(SW+10)
-    y1 = int(pipeHeight - y2 + gap)
+    y1 = int(y2 - pipeHeight - GAP)
     pipe = [
-        {'x': pipex, 'y': -y1},
+        {'x': pipex, 'y': y1},
         {'x': pipex, 'y': y2}
     ]
     return pipe
 
 def convert(birdxpos, birdypos, bttm_pipes):
-    if birdxpos <= bttm_pipes[0]['x'] + IMAGES['pipe'][0].get_width():
+    if birdxpos < bttm_pipes[0]['x'] + IMAGES['pipe'][0].get_width():
         x = min(SW, bttm_pipes[0]['x'] + IMAGES['pipe'][0].get_width())
         y = bttm_pipes[0]['y'] - birdypos
     else:
